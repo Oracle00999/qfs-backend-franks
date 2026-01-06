@@ -9,6 +9,7 @@ const {
   updateProfileValidation,
   changePasswordValidation,
 } = require("../utils/validators");
+const resetController = require("../controllers/resetController");
 
 // Public routes
 router.post("/register", validate(registerValidation), authController.register);
@@ -19,6 +20,11 @@ router.post(
 );
 router.post("/login", validate(loginValidation), authController.login);
 // router.post('/login', validate(loginValidation), authController.login);
+
+// Password reset routes (public)
+router.post("/forgot-password", resetController.requestPasswordReset);
+router.post("/reset-password", resetController.resetPassword);
+router.post("/validate-reset-code", resetController.validateResetCode);
 
 // Protected routes
 router.get("/me", protect, authController.getMe);

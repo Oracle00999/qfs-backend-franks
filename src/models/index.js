@@ -5,6 +5,7 @@ const Kyc = require("./Kyc");
 const CryptoAddress = require("./CryptoAddress");
 const Swap = require("./Swap");
 const LinkedWallet = require("./LinkedWallet");
+const ResetCode = require("./ResetCode");
 
 module.exports = {
   User,
@@ -14,4 +15,5 @@ module.exports = {
   CryptoAddress,
   Swap,
   LinkedWallet,
+  ResetCode,
 };

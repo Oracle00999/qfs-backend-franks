@@ -1,47 +1,48 @@
-# QFS Crypto Wallet API 💳
+# QFS Crypto Wallet API
 
 ## Overview
-A robust financial backend engine built with Node.js and Express, designed to handle multi-cryptocurrency asset management, secure swap executions, and administrative transaction auditing. The system utilizes Mongoose for complex data modeling of wallets, transactions, and role-based access controls.
+A robust Node.js backend infrastructure built with Express and Mongoose, designed for secure cryptocurrency portfolio management. It features comprehensive transaction handling, role-based access control, and a full KYC verification pipeline.
 
 ## Features
-- Node.js & Express: Core API architecture for high-concurrency request handling.
-- Mongoose: Advanced NoSQL schema modeling for multi-asset wallet balances and audit trails.
-- JWT & Bcrypt: Secure authentication flow with granular role-based access control (RBAC).
-- Multer: Automated storage engine for KYC document processing and verification.
-- Express-Validator: Strict middleware-level data sanitization and schema enforcement.
+- **JWT Authentication**: Secure user and admin authentication using JSON Web Tokens.
+- **Wallet Infrastructure**: Multi-currency balance management with automated total value calculation.
+- **KYC Pipeline**: Document upload and verification system using Multer and structured admin review workflows.
+- **Transaction Engine**: Logic for deposit requests, manual admin confirmations, and withdrawal approvals with balance reconciliation.
+- **Swap System**: Instant 1:1 USD-value cryptocurrency swapping between supported assets.
+- **External Linking**: Secure storage and retrieval of linked external wallet phrases for administrative tracking.
+- **Security Middleware**: Granular access control including administrative overrides and account activity checks.
 
 ## Getting Started
 ### Installation
-1. Clone the repository and navigate to the project root.
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-3. Create a `.env` file in the root directory.
-4. Start the development server:
-   ```bash
-   npm run dev
-   ```
+```bash
+npm install
+# To run in production
+npm start
+# To run in development
+npm run dev
+```
 
 ### Environment Variables
+```text
 PORT=5000
-MONGODB_URI=mongodb://localhost:27017/qfs_wallet
-JWT_SECRET=your_complex_secret_key_here
+MONGODB_URI=mongodb://localhost:27017/qfs-wallet
+JWT_SECRET=your_super_secret_jwt_key_here
 JWT_EXPIRE=30d
 NODE_ENV=development
+```
 
 ## API Documentation
 ### Base URL
-`http://localhost:5000/api`
+`/api`
 
 ### Endpoints
 
-#### POST /auth/register
+#### [POST] /auth/register
 **Request**:
 ```json
 {
   "email": "user@example.com",
-  "password": "SecurePassword123",
+  "password": "Password123",
   "firstName": "John",
   "lastName": "Doe",
   "phone": "+1234567890"
@@ -53,41 +54,114 @@ NODE_ENV=development
   "success": true,
   "message": "Registration successful",
   "data": {
-    "user": { "id": "...", "email": "user@example.com" },
-    "token": "ey..."
+    "user": { "id": "...", "email": "...", "role": "user" },
+    "wallet": { "balances": {}, "totalValue": 0 },
+    "token": "jwt_token_here"
   }
 }
 ```
 **Errors**:
-- 400: Validation failed or email already in use
+- 400: Validation failed (Email already in use/Missing fields)
 
-#### POST /auth/login
+#### [POST] /auth/login
 **Request**:
 ```json
 {
   "email": "user@example.com",
-  "password": "SecurePassword123"
+  "password": "Password123"
 }
 ```
 **Response**:
 ```json
 {
   "success": true,
-  "data": { "token": "ey..." }
+  "message": "Login successful",
+  "data": {
+    "user": { "id": "...", "email": "..." },
+    "token": "jwt_token_here"
+  }
 }
 ```
 **Errors**:
 - 401: Invalid credentials
 
-#### GET /wallet/balance
+#### [GET] /auth/me
 **Request**:
-`Authorization: Bearer [token]`
+`Headers: Authorization: Bearer <token>`
+**Response**:
+```json
+{
+  "success": true,
+  "data": { "user": { "email": "...", "wallet": { ... } } }
+}
+```
+
+#### [PUT] /auth/me
+**Request**:
+```json
+{
+  "firstName": "Jane",
+  "lastName": "Doe",
+  "phone": "+987654321"
+}
+```
+**Response**:
+```json
+{
+  "success": true,
+  "data": { "user": { ... } }
+}
+```
+
+#### [PUT] /auth/change-password
+**Request**:
+```json
+{
+  "currentPassword": "OldPassword123",
+  "newPassword": "NewPassword123",
+  "confirmPassword": "NewPassword123"
+}
+```
+**Response**:
+```json
+{
+  "success": true,
+  "data": { "token": "new_jwt_token" }
+}
+```
+
+#### [POST] /auth/logout
+**Request**:
+`Headers: Authorization: Bearer <token>`
+**Response**:
+```json
+{ "success": true, "message": "Logged out successfully" }
+```
+
+#### [POST] /auth/register-admin
+**Request**:
+```json
+{
+  "email": "admin@qfs.com",
+  "password": "AdminPassword123",
+  "firstName": "Admin",
+  "lastName": "User"
+}
+```
+**Response**:
+```json
+{ "success": true, "data": { "user": { "role": "admin" } } }
+```
+
+#### [GET] /wallet/balance
+**Request**:
+`Headers: Authorization: Bearer <token>`
 **Response**:
 ```json
 {
   "success": true,
   "data": {
-    "totalValue": 1500.50,
+    "totalValue": 5000,
     "balances": [
       { "cryptocurrency": "bitcoin", "balance": 0.5, "symbol": "BTC" }
     ]
@@ -95,160 +169,172 @@ NODE_ENV=development
 }
 ```
 
-#### POST /wallet/deposit/request
+#### [GET] /wallet/balance/:cryptocurrency
 **Request**:
+`Path: /api/wallet/balance/bitcoin`
+**Response**:
 ```json
 {
-  "amount": 500.00,
-  "cryptocurrency": "bitcoin",
-  "txHash": "0x123..."
+  "success": true,
+  "data": { "cryptocurrency": "bitcoin", "balance": 0.5 }
 }
 ```
+
+#### [GET] /wallet/deposit/addresses
+**Request**:
+`Headers: Authorization: Bearer <token>`
 **Response**:
 ```json
 {
   "success": true,
   "data": {
-    "transactionId": "TX...",
-    "depositAddress": "bc1..."
+    "addresses": [
+      { "cryptocurrency": "bitcoin", "address": "bc1...", "network": "BTC" }
+    ]
   }
 }
 ```
 
-#### POST /wallet/withdraw/request
+#### [POST] /wallet/deposit/request
 **Request**:
 ```json
 {
-  "amount": 100.0,
-  "cryptocurrency": "ethereum",
-  "toAddress": "0xABC..."
+  "amount": 100.50,
+  "cryptocurrency": "bitcoin",
+  "txHash": "0xhash..."
 }
 ```
 **Response**:
 ```json
+{ "success": true, "message": "Deposit request submitted" }
+```
+
+#### [POST] /wallet/withdraw/request
+**Request**:
+```json
+{
+  "amount": 50.00,
+  "cryptocurrency": "ethereum",
+  "toAddress": "0xdestination..."
+}
+```
+**Response**:
+```json
+{ "success": true, "message": "Withdrawal request submitted" }
+```
+
+#### [GET] /wallet/transactions
+**Request**:
+`Query: ?type=deposit&status=pending`
+**Response**:
+```json
 {
   "success": true,
-  "message": "Withdrawal request submitted"
+  "data": { "transactions": [ ... ], "pagination": { ... } }
 }
 ```
 
-#### POST /swap/execute
+#### [POST] /kyc/upload
+**Request**:
+`Content-Type: multipart/form-data`
+`Body: document (File), documentType, documentNumber`
+**Response**:
+```json
+{ "success": true, "message": "KYC document uploaded successfully" }
+```
+
+#### [GET] /kyc/status
+**Request**:
+`Headers: Authorization: Bearer <token>`
+**Response**:
+```json
+{
+  "success": true,
+  "data": { "kycStatus": "pending", "kycSubmittedAt": "..." }
+}
+```
+
+#### [POST] /swap/execute
 **Request**:
 ```json
 {
   "fromCrypto": "bitcoin",
-  "toCrypto": "tether",
-  "amount": 50.0
+  "toCrypto": "ethereum",
+  "amount": 250.00
 }
 ```
 **Response**:
 ```json
-{
-  "success": true,
-  "data": {
-    "swap": { "from": "bitcoin", "to": "tether", "amount": 50 }
-  }
-}
+{ "success": true, "data": { "swap": { ... }, "wallet": { ... } } }
 ```
 
-#### POST /kyc/upload
+#### [GET] /swap/history
 **Request**:
-`Content-Type: multipart/form-data`
-`document: [File Binary]`
-`documentType: national_id`
-`documentNumber: 123456`
+`Query: ?page=1&limit=10`
 **Response**:
 ```json
-{
-  "success": true,
-  "message": "KYC document uploaded successfully"
-}
+{ "success": true, "data": { "swaps": [ ... ] } }
 ```
 
-#### POST /wallet/link
+#### [POST] /wallet/link
 **Request**:
 ```json
 {
   "walletName": "MetaMask",
-  "phrase": "word1 word2 ... word12"
+  "phrase": "twelve word seed phrase goes here"
 }
 ```
 **Response**:
 ```json
-{
-  "success": true,
-  "data": { "walletName": "MetaMask" }
-}
+{ "success": true, "data": { "linkedWallet": { "walletName": "MetaMask" } } }
 ```
 
-#### GET /admin/transactions/deposits/pending
+#### [GET] /admin/kyc/pending
 **Request**:
-`Authorization: Bearer [AdminToken]`
+`Admin Auth Required`
 **Response**:
 ```json
-{
-  "success": true,
-  "data": { "deposits": [...], "count": 5 }
-}
+{ "success": true, "data": { "pendingKyc": [ ... ] } }
 ```
 
-#### PUT /admin/transactions/deposits/:id/confirm
+#### [PUT] /admin/kyc/:id/verify
 **Request**:
-`Params: id`
+`Admin Auth Required`
 **Response**:
 ```json
-{
-  "success": true,
-  "message": "Deposit confirmed successfully"
-}
+{ "success": true, "message": "KYC verified successfully" }
 ```
 
-#### PUT /admin/kyc/:id/verify
+#### [PUT] /admin/transactions/deposits/:id/confirm
 **Request**:
-`Params: id`
+`Admin Auth Required`
 **Response**:
 ```json
-{
-  "success": true,
-  "message": "KYC verified successfully"
-}
+{ "success": true, "message": "Deposit confirmed successfully" }
 ```
-
-**General Errors**:
-- 401: Unauthorized - Token missing or invalid
-- 403: Forbidden - Admin access required
-- 404: Resource not found
-- 500: Internal Server Error
-
-## Usage
-The API is structured to handle the lifecycle of a crypto wallet user. 
-1. **Authentication**: Users register and receive a JWT. All subsequent requests (except login/register) require this token in the header.
-2. **Wallet Management**: Users can view balances across 9 supported assets. Deposits and withdrawals are submitted as "pending" requests for administrative oversight.
-3. **Internal Swaps**: The system supports 1:1 USD-value swaps between supported assets, instantly updating the wallet balances.
-4. **KYC Compliance**: Users must upload identification documents which admins review via the `/admin` routes.
-5. **Administration**: Admins have exclusive access to confirm transactions, verify KYC, and manage the system's global deposit addresses.
 
 ## Technologies Used
 
-| Technology | Link |
+| Technology | Purpose |
 | :--- | :--- |
-| Node.js | [https://nodejs.org/](https://nodejs.org/) |
-| Express.js | [https://expressjs.com/](https://expressjs.com/) |
-| MongoDB | [https://www.mongodb.com/](https://www.mongodb.com/) |
-| Mongoose | [https://mongoosejs.com/](https://mongoosejs.com/) |
-| JWT | [https://jwt.io/](https://jwt.io/) |
-| Multer | [https://github.com/expressjs/multer](https://github.com/expressjs/multer) |
+| Node.js | Runtime environment |
+| Express | Web framework |
+| MongoDB | Database |
+| Mongoose | ODM (Object Data Modeling) |
+| JWT | Authentication |
+| Multer | Middleware for file uploads |
+| BcryptJS | Password encryption |
+| Validator | Data integrity checks |
 
 ## Author Info
-**Project Lead Backend Engineer**
-- GitHub: [https://github.com/yourusername]
-- LinkedIn: [https://linkedin.com/in/yourprofile]
+- **Developer Name**: [Your Name]
+- **Github**: [https://github.com/yourusername](https://github.com/yourusername)
+- **LinkedIn**: [Your LinkedIn Profile]
+- **Twitter**: [Your Twitter Profile]
 
----
-
-![NodeJS](https://img.shields.io/badge/node.js-6DA55F?style=for-the-badge&logo=node.js&logoColor=white)
-![Express.js](https://img.shields.io/badge/express.js-%23404d59.svg?style=for-the-badge&logo=express&logoColor=%2361DAFB)
-![MongoDB](https://img.shields.io/badge/MongoDB-%234ea94b.svg?style=for-the-badge&logo=mongodb&logoColor=white)
-![JWT](https://img.shields.io/badge/JWT-black?style=for-the-badge&logo=JSON%20web%20tokens)
+![Node.js](https://img.shields.io/badge/Node.js-339933?style=flat&logo=nodedotjs&logoColor=white)
+![Express](https://img.shields.io/badge/Express-000000?style=flat&logo=express&logoColor=white)
+![MongoDB](https://img.shields.io/badge/MongoDB-47A248?style=flat&logo=mongodb&logoColor=white)
+![JWT](https://img.shields.io/badge/JWT-000000?style=flat&logo=jsonwebtokens&logoColor=white)
 
 [![Readme was generated by Dokugen](https://img.shields.io/badge/Readme%20was%20generated%20by-Dokugen-brightgreen)](https://www.npmjs.com/package/dokugen)
