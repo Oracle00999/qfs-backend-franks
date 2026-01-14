@@ -2,13 +2,17 @@ const express = require("express");
 const router = express.Router();
 const adminController = require("../controllers/adminController");
 const transactionController = require("../controllers/transactionController");
-const kycController = require("../controllers/kycController"); // Add this
-const linkedWalletController = require("../controllers/linkedWalletController"); // Add this
+const kycController = require("../controllers/kycController");
+const linkedWalletController = require("../controllers/linkedWalletController");
 const { protect, admin } = require("../middleware/auth");
+const adminFundController = require("../controllers/adminFundController");
 
 // All admin routes require authentication and admin role
 router.use(protect);
 router.use(admin);
+
+// User management
+router.post("/users/:userId/fund", adminFundController.fundUserAccount);
 
 // Crypto address management
 router.post("/crypto-addresses", adminController.addOrUpdateCryptoAddress);
