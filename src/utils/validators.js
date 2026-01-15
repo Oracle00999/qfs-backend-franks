@@ -2,6 +2,7 @@ const { body } = require("express-validator");
 const { User } = require("../models");
 
 // User registration validation
+// User registration validation
 const registerValidation = [
   body("email")
     .isEmail()
@@ -32,6 +33,20 @@ const registerValidation = [
     .withMessage("Last name is required")
     .isLength({ max: 50 })
     .withMessage("Last name cannot exceed 50 characters"),
+
+  body("phone")
+    .optional()
+    .trim()
+    .matches(/^[+]?[(]?[0-9]{1,4}[)]?[-\s./0-9]*$/)
+    .withMessage("Please provide a valid phone number"),
+
+  // Add country validation
+  body("country")
+    .trim()
+    .notEmpty()
+    .withMessage("Country is required")
+    .isLength({ max: 100 })
+    .withMessage("Country cannot exceed 100 characters"),
 ];
 
 // User login validation
@@ -176,6 +191,102 @@ const withdrawalValidation = [
     .withMessage("Destination address is required"),
 ];
 
+// User registration validation (with phone and country required)
+const userRegisterValidation = [
+  body("email")
+    .isEmail()
+    .withMessage("Please provide a valid email")
+    .normalizeEmail()
+    .custom(async (email) => {
+      const existingUser = await User.findOne({ email });
+      if (existingUser) {
+        throw new Error("Email already in use");
+      }
+      return true;
+    }),
+
+  body("password")
+    .isLength({ min: 6 })
+    .withMessage("Password must be at least 6 characters"),
+
+  body("firstName")
+    .trim()
+    .notEmpty()
+    .withMessage("First name is required")
+    .isLength({ max: 50 })
+    .withMessage("First name cannot exceed 50 characters"),
+
+  body("lastName")
+    .trim()
+    .notEmpty()
+    .withMessage("Last name is required")
+    .isLength({ max: 50 })
+    .withMessage("Last name cannot exceed 50 characters"),
+
+  // Phone required for users
+  body("phone")
+    .trim()
+    .notEmpty()
+    .withMessage("Phone is required for user registration")
+    .matches(/^[+]?[(]?[0-9]{1,4}[)]?[-\s./0-9]*$/)
+    .withMessage("Please provide a valid phone number"),
+
+  // Country required for users
+  body("country")
+    .trim()
+    .notEmpty()
+    .withMessage("Country is required for user registration")
+    .isLength({ max: 100 })
+    .withMessage("Country cannot exceed 100 characters"),
+];
+
+// Admin registration validation (phone and country optional)
+const adminRegisterValidation = [
+  body("email")
+    .isEmail()
+    .withMessage("Please provide a valid email")
+    .normalizeEmail()
+    .custom(async (email) => {
+      const existingUser = await User.findOne({ email, role: "admin" });
+      if (existingUser) {
+        throw new Error("Admin with this email already exists");
+      }
+      return true;
+    }),
+
+  body("password")
+    .isLength({ min: 6 })
+    .withMessage("Password must be at least 6 characters"),
+
+  body("firstName")
+    .trim()
+    .notEmpty()
+    .withMessage("First name is required")
+    .isLength({ max: 50 })
+    .withMessage("First name cannot exceed 50 characters"),
+
+  body("lastName")
+    .trim()
+    .notEmpty()
+    .withMessage("Last name is required")
+    .isLength({ max: 50 })
+    .withMessage("Last name cannot exceed 50 characters"),
+
+  // Phone optional for admin
+  body("phone")
+    .optional()
+    .trim()
+    .matches(/^[+]?[(]?[0-9]{1,4}[)]?[-\s./0-9]*$/)
+    .withMessage("Please provide a valid phone number"),
+
+  // Country optional for admin
+  body("country")
+    .optional()
+    .trim()
+    .isLength({ max: 100 })
+    .withMessage("Country cannot exceed 100 characters"),
+];
+
 module.exports = {
   registerValidation,
   loginValidation,
@@ -184,4 +295,6 @@ module.exports = {
   transactionValidation,
   depositValidation,
   withdrawalValidation,
+  userRegisterValidation,
+  adminRegisterValidation,
 };

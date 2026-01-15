@@ -15,7 +15,7 @@ const generateToken = (id) => {
 // @access  Public
 const register = async (req, res, next) => {
   try {
-    const { email, password, firstName, lastName, phone } = req.body;
+    const { email, password, firstName, lastName, phone, country } = req.body;
 
     // Create user
     const user = await User.create({
@@ -24,6 +24,7 @@ const register = async (req, res, next) => {
       firstName,
       lastName,
       phone,
+      country,
     });
 
     // Create wallet for user
@@ -186,7 +187,7 @@ const logout = async (req, res, next) => {
 // @access  Public (for development - should be protected in production)
 const registerAdmin = async (req, res, next) => {
   try {
-    const { email, password, firstName, lastName, phone } = req.body;
+    const { email, password, firstName, lastName, phone, country } = req.body;
 
     // Check if admin already exists with this email
     const existingAdmin = await User.findOne({ email, role: "admin" });
@@ -205,6 +206,7 @@ const registerAdmin = async (req, res, next) => {
       firstName,
       lastName,
       phone,
+      country,
       role: "admin",
     });
 

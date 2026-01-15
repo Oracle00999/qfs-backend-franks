@@ -39,6 +39,13 @@ const userSchema = new mongoose.Schema(
       trim: true,
     },
 
+    country: {
+      type: String,
+      // required: [true, "Country is required"],
+      trim: true,
+      // default: "Not Specified",
+    },
+
     // Account Information
     role: {
       type: String,

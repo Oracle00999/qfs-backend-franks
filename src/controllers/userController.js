@@ -38,6 +38,8 @@ const getAllUsers = async (req, res, next) => {
             { email: { $regex: search, $options: "i" } },
             { firstName: { $regex: search, $options: "i" } },
             { lastName: { $regex: search, $options: "i" } },
+            { phone: { $regex: search, $options: "i" } },
+            { country: { $regex: search, $options: "i" } },
           ],
         }
       : {};
