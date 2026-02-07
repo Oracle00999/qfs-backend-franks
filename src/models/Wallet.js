@@ -62,6 +62,11 @@ const walletSchema = new mongoose.Schema(
         default: DEFAULT_BALANCES[CRYPTO_TYPES.TRX],
         min: [0, "Balance cannot be negative"],
       },
+      litecoin: {
+        type: Number,
+        default: DEFAULT_BALANCES[CRYPTO_TYPES.LTC],
+        min: [0, "Balance cannot be negative"],
+      },
     },
 
     // Total portfolio value (calculated virtual)
@@ -85,7 +90,7 @@ const walletSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // Calculate total value before saving

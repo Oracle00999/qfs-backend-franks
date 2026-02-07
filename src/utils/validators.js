@@ -155,6 +155,7 @@ const depositValidation = [
       "stellar",
       "dogecoin",
       "tron",
+      "litecoin",
     ])
     .withMessage("Invalid cryptocurrency"),
 
@@ -182,6 +183,7 @@ const withdrawalValidation = [
       "stellar",
       "dogecoin",
       "tron",
+      "litecoin",
     ])
     .withMessage("Invalid cryptocurrency"),
 

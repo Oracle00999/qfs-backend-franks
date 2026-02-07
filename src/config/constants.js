@@ -16,6 +16,7 @@ module.exports = {
     XLM: "stellar",
     DOGE: "dogecoin",
     TRX: "tron",
+    LTC: "litecoin",
   },
 
   // Transaction types
@@ -60,6 +61,7 @@ module.exports = {
     stellar: 0,
     dogecoin: 0,
     tron: 0,
+    litecoin: 0,
   },
 
   // Crypto symbols mapping
@@ -73,6 +75,7 @@ module.exports = {
     stellar: "XLM",
     dogecoin: "DOGE",
     tron: "TRX",
+    litecoin: "LTC",
   },
 
   // Swap statuses

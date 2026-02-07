@@ -20,6 +20,7 @@ const addOrUpdateCryptoAddress = async (req, res, next) => {
       "stellar",
       "dogecoin",
       "tron",
+      "litecoin",
     ];
 
     if (!validCryptos.includes(cryptocurrency)) {
@@ -58,7 +59,7 @@ const addOrUpdateCryptoAddress = async (req, res, next) => {
       {
         cryptoAddress: cryptoAddress.getDisplayInfo(),
       },
-      "Cryptocurrency address saved successfully"
+      "Cryptocurrency address saved successfully",
     );
   } catch (error) {
     next(error);
@@ -89,7 +90,7 @@ const getAllCryptoAddresses = async (req, res, next) => {
       {
         cryptoAddresses: formattedAddresses,
       },
-      "Cryptocurrency addresses retrieved successfully"
+      "Cryptocurrency addresses retrieved successfully",
     );
   } catch (error) {
     next(error);
@@ -128,7 +129,7 @@ const getCryptoAddress = async (req, res, next) => {
           updatedAt: cryptoAddress.updatedAt,
         },
       },
-      "Cryptocurrency address retrieved successfully"
+      "Cryptocurrency address retrieved successfully",
     );
   } catch (error) {
     next(error);
@@ -163,7 +164,7 @@ const toggleCryptoAddressStatus = async (req, res, next) => {
       },
       `Cryptocurrency address ${
         cryptoAddress.isActive ? "activated" : "deactivated"
-      } successfully`
+      } successfully`,
     );
   } catch (error) {
     next(error);
@@ -204,7 +205,7 @@ const getPendingDeposits = async (req, res, next) => {
         deposits: formattedDeposits,
         count: formattedDeposits.length,
       },
-      "Pending deposits retrieved successfully"
+      "Pending deposits retrieved successfully",
     );
   } catch (error) {
     next(error);
@@ -246,7 +247,7 @@ const getPendingWithdrawals = async (req, res, next) => {
         withdrawals: formattedWithdrawals,
         count: formattedWithdrawals.length,
       },
-      "Pending withdrawals retrieved successfully"
+      "Pending withdrawals retrieved successfully",
     );
   } catch (error) {
     next(error);
