@@ -28,8 +28,7 @@ const getUserById = async (req, res, next) => {
 // @access  Private/Admin
 const getAllUsers = async (req, res, next) => {
   try {
-    const { page = 1, limit = 10, search = "" } = req.query;
-    const skip = (page - 1) * limit;
+    const { search = "" } = req.query;
 
     // Build search query
     const searchQuery = search
@@ -44,30 +43,13 @@ const getAllUsers = async (req, res, next) => {
         }
       : {};
 
-    // Get users with pagination
+    // Get all users (no pagination)
     const users = await User.find(searchQuery)
       .select("-password")
       .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(parseInt(limit))
       .populate("wallet", "totalValue");
 
-    // Get total count
-    const total = await User.countDocuments(searchQuery);
-
-    successResponse(
-      res,
-      {
-        users,
-        pagination: {
-          page: parseInt(page),
-          limit: parseInt(limit),
-          total,
-          pages: Math.ceil(total / limit),
-        },
-      },
-      "Users retrieved successfully"
-    );
+    successResponse(res, { users }, "Users retrieved successfully");
   } catch (error) {
     next(error);
   }
@@ -83,7 +65,7 @@ const updateUserStatus = async (req, res, next) => {
     const user = await User.findByIdAndUpdate(
       req.params.id,
       { isActive },
-      { new: true, runValidators: true }
+      { new: true, runValidators: true },
     ).select("-password");
 
     if (!user) {
@@ -96,7 +78,7 @@ const updateUserStatus = async (req, res, next) => {
     successResponse(
       res,
       { user },
-      `User ${isActive ? "activated" : "deactivated"} successfully`
+      `User ${isActive ? "activated" : "deactivated"} successfully`,
     );
   } catch (error) {
     next(error);
