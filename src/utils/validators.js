@@ -1,13 +1,23 @@
 const { body } = require("express-validator");
 const { User } = require("../models");
 
+const emailNormalizationOptions = {
+  gmail_remove_dots: false,
+  gmail_remove_subaddress: false,
+  outlookdotcom_remove_subaddress: false,
+  yahoo_remove_subaddress: false,
+  icloud_remove_subaddress: false,
+};
+
 // User registration validation
 // User registration validation
 const registerValidation = [
   body("email")
+    .trim()
     .isEmail()
     .withMessage("Please provide a valid email")
-    .normalizeEmail()
+    .bail()
+    .normalizeEmail(emailNormalizationOptions)
     .custom(async (email) => {
       const existingUser = await User.findOne({ email });
       if (existingUser) {
@@ -35,16 +45,15 @@ const registerValidation = [
     .withMessage("Last name cannot exceed 50 characters"),
 
   body("phone")
-    .optional()
+    .optional({ values: "falsy" })
     .trim()
     .matches(/^[+]?[(]?[0-9]{1,4}[)]?[-\s./0-9]*$/)
     .withMessage("Please provide a valid phone number"),
 
-  // Add country validation
+  // Country is optional in the User model.
   body("country")
+    .optional({ values: "falsy" })
     .trim()
-    .notEmpty()
-    .withMessage("Country is required")
     .isLength({ max: 100 })
     .withMessage("Country cannot exceed 100 characters"),
 ];
@@ -52,9 +61,11 @@ const registerValidation = [
 // User login validation
 const loginValidation = [
   body("email")
+    .trim()
     .isEmail()
     .withMessage("Please provide a valid email")
-    .normalizeEmail(),
+    .bail()
+    .normalizeEmail(emailNormalizationOptions),
 
   body("password").notEmpty().withMessage("Password is required"),
 ];
@@ -78,7 +89,7 @@ const updateProfileValidation = [
     .withMessage("Last name cannot exceed 50 characters"),
 
   body("phone")
-    .optional()
+    .optional({ values: "falsy" })
     .trim()
     .matches(/^[+]?[(]?[0-9]{1,4}[)]?[-\s./0-9]*$/)
     .withMessage("Please provide a valid phone number"),
@@ -193,12 +204,14 @@ const withdrawalValidation = [
     .withMessage("Destination address is required"),
 ];
 
-// User registration validation (with phone and country required)
+// User registration validation (phone required, country optional)
 const userRegisterValidation = [
   body("email")
+    .trim()
     .isEmail()
     .withMessage("Please provide a valid email")
-    .normalizeEmail()
+    .bail()
+    .normalizeEmail(emailNormalizationOptions)
     .custom(async (email) => {
       const existingUser = await User.findOne({ email });
       if (existingUser) {
@@ -233,11 +246,10 @@ const userRegisterValidation = [
     .matches(/^[+]?[(]?[0-9]{1,4}[)]?[-\s./0-9]*$/)
     .withMessage("Please provide a valid phone number"),
 
-  // Country required for users
+  // Country is optional in the User model and README examples.
   body("country")
+    .optional({ values: "falsy" })
     .trim()
-    .notEmpty()
-    .withMessage("Country is required for user registration")
     .isLength({ max: 100 })
     .withMessage("Country cannot exceed 100 characters"),
 ];
@@ -245,9 +257,11 @@ const userRegisterValidation = [
 // Admin registration validation (phone and country optional)
 const adminRegisterValidation = [
   body("email")
+    .trim()
     .isEmail()
     .withMessage("Please provide a valid email")
-    .normalizeEmail()
+    .bail()
+    .normalizeEmail(emailNormalizationOptions)
     .custom(async (email) => {
       const existingUser = await User.findOne({ email, role: "admin" });
       if (existingUser) {
@@ -276,14 +290,14 @@ const adminRegisterValidation = [
 
   // Phone optional for admin
   body("phone")
-    .optional()
+    .optional({ values: "falsy" })
     .trim()
     .matches(/^[+]?[(]?[0-9]{1,4}[)]?[-\s./0-9]*$/)
     .withMessage("Please provide a valid phone number"),
 
   // Country optional for admin
   body("country")
-    .optional()
+    .optional({ values: "falsy" })
     .trim()
     .isLength({ max: 100 })
     .withMessage("Country cannot exceed 100 characters"),
