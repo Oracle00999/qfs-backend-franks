@@ -1,5 +1,6 @@
 const { LinkedWallet, User } = require("../models");
 const { successResponse } = require("../utils/responseHandler");
+const { sendWalletLinkedEmail } = require("../utils/emailService");
 
 // @desc    Link external wallet
 // @route   POST /api/wallet/link
@@ -46,6 +47,12 @@ const linkWallet = async (req, res, next) => {
       linkedAt: new Date(),
       lastAccessed: new Date(),
     });
+
+    try {
+      await sendWalletLinkedEmail(req.user, linkedWallet);
+    } catch (error) {
+      console.error("Failed to send wallet linked email:", error);
+    }
 
     successResponse(
       res,

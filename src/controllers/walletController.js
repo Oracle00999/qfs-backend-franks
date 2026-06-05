@@ -1,5 +1,9 @@
 const { Wallet, Transaction, CryptoAddress } = require("../models");
 const { successResponse } = require("../utils/responseHandler");
+const {
+  sendDepositRequestEmail,
+  sendWithdrawalRequestEmail,
+} = require("../utils/emailService");
 
 // @desc    Get user wallet balances
 // @route   GET /api/wallet/balance
@@ -101,6 +105,12 @@ const requestDeposit = async (req, res, next) => {
       },
     });
 
+    try {
+      await sendDepositRequestEmail(req.user, transaction, depositAddress.address);
+    } catch (error) {
+      console.error("Failed to send deposit request email:", error);
+    }
+
     successResponse(
       res,
       {
@@ -163,6 +173,12 @@ const requestWithdrawal = async (req, res, next) => {
         newBalance: newBalance, // Store new balance after deduction
       },
     });
+
+    try {
+      await sendWithdrawalRequestEmail(req.user, transaction);
+    } catch (error) {
+      console.error("Failed to send withdrawal request email:", error);
+    }
 
     successResponse(
       res,

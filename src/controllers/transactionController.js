@@ -1,5 +1,9 @@
 const { Transaction, Wallet } = require("../models");
 const { successResponse } = require("../utils/responseHandler");
+const {
+  sendDepositConfirmedEmail,
+  sendWithdrawalConfirmedEmail,
+} = require("../utils/emailService");
 
 // @desc    Confirm a deposit
 // @route   PUT /api/admin/transactions/deposits/:id/confirm
@@ -54,6 +58,12 @@ const confirmDeposit = async (req, res, next) => {
     // Mark transaction as completed
     transaction.markAsCompleted(adminId);
     await transaction.save();
+
+    try {
+      await sendDepositConfirmedEmail(transaction.user, transaction);
+    } catch (error) {
+      console.error("Failed to send deposit confirmed email:", error);
+    }
 
     successResponse(
       res,
@@ -189,6 +199,12 @@ const approveWithdrawal = async (req, res, next) => {
     // Mark transaction as completed (balance already deducted)
     transaction.markAsCompleted(adminId);
     await transaction.save();
+
+    try {
+      await sendWithdrawalConfirmedEmail(transaction.user, transaction);
+    } catch (error) {
+      console.error("Failed to send withdrawal confirmed email:", error);
+    }
 
     successResponse(
       res,
