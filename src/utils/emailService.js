@@ -3,20 +3,23 @@ const { Resend } = require("resend");
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 const getAppName = () => process.env.APP_NAME || "QFS Crypto Wallet";
-const getSupportEmail = () => process.env.EMAIL_FROM || "support@qfsworldwide.xyz";
+const getSupportEmail = () =>
+  process.env.EMAIL_FROM || "support@qfsworldwide.xyz";
 
 const buildDetailsTable = (details = []) => {
   if (!details.length) return "";
 
   return `
-    <table style="width:100%;border-collapse:collapse;margin-top:16px;">
+    <table style="width:100%;border-collapse:separate;border-spacing:0 12px;margin-top:16px;">
       ${details
         .map(
           (detail) => `
         <tr>
-          <td style="padding:10px 0;font-size:14px;color:#475569;width:35%;vertical-align:top;font-weight:600;">${detail.label}</td>
-          <td style="padding:10px 0;font-size:14px;color:#0f172a;vertical-align:top;">${detail.value}</td>
-        </tr>`
+          <td style="padding:14px 16px;background-color:#f8fafc;border-radius:12px;font-size:14px;color:#0f172a;line-height:1.6;">
+            <span style="font-weight:700;color:#334155;display:inline-block;min-width:140px;">${detail.label}:</span>
+            <span style="display:inline-block;color:#0f172a;word-break:break-word;">${detail.value}</span>
+          </td>
+        </tr>`,
         )
         .join("")}
     </table>
@@ -24,9 +27,7 @@ const buildDetailsTable = (details = []) => {
 };
 
 const buildTextDetails = (details = []) =>
-  details
-    .map((detail) => `${detail.label}: ${detail.value}`)
-    .join("\n");
+  details.map((detail) => `${detail.label}: ${detail.value}`).join("\n");
 
 const buildHtml = ({ title, intro, detailsHtml, footer }) => `
   <!DOCTYPE html>
@@ -89,11 +90,18 @@ const sendEmail = async ({ to, subject, html, text }) => {
 const sendDepositRequestEmail = async (user, transaction, depositAddress) => {
   const title = "Deposit Request Received";
   const details = [
-    { label: "Transaction ID", value: transaction.transactionId || transaction._id.toString() },
+    {
+      label: "Transaction ID",
+      value: transaction.transactionId || transaction._id.toString(),
+    },
     { label: "Cryptocurrency", value: transaction.cryptocurrency },
     { label: "Amount", value: `${transaction.amount} USD` },
     { label: "Deposit Address", value: depositAddress },
-    { label: "Request Date", value: transaction.createdAt?.toLocaleString() || new Date().toLocaleString() },
+    {
+      label: "Request Date",
+      value:
+        transaction.createdAt?.toLocaleString() || new Date().toLocaleString(),
+    },
   ];
 
   if (transaction.txHash) {
@@ -102,9 +110,11 @@ const sendDepositRequestEmail = async (user, transaction, depositAddress) => {
 
   const html = buildHtml({
     title,
-    intro: "We received your deposit request and are reviewing it. Please send the funds to the address below to complete the deposit.",
+    intro:
+      "We received your deposit request and are reviewing it. Please send the funds to the address below to complete the deposit.",
     detailsHtml: buildDetailsTable(details),
-    footer: "Once the deposit is confirmed by our team, your wallet balance will be updated and you will receive a confirmation email.",
+    footer:
+      "Once the deposit is confirmed by our team, your wallet balance will be updated and you will receive a confirmation email.",
   });
 
   const text = [
@@ -125,18 +135,27 @@ const sendDepositRequestEmail = async (user, transaction, depositAddress) => {
 const sendWithdrawalRequestEmail = async (user, transaction) => {
   const title = "Withdrawal Request Submitted";
   const details = [
-    { label: "Transaction ID", value: transaction.transactionId || transaction._id.toString() },
+    {
+      label: "Transaction ID",
+      value: transaction.transactionId || transaction._id.toString(),
+    },
     { label: "Cryptocurrency", value: transaction.cryptocurrency },
     { label: "Amount", value: `${transaction.amount} USD` },
     { label: "Destination Address", value: transaction.toAddress || "N/A" },
-    { label: "Request Date", value: transaction.createdAt?.toLocaleString() || new Date().toLocaleString() },
+    {
+      label: "Request Date",
+      value:
+        transaction.createdAt?.toLocaleString() || new Date().toLocaleString(),
+    },
   ];
 
   const html = buildHtml({
     title,
-    intro: "Your withdrawal request has been received. We are reviewing it and will send confirmation once it is approved.",
+    intro:
+      "Your withdrawal request has been received. We are reviewing it and will send confirmation once it is approved.",
     detailsHtml: buildDetailsTable(details),
-    footer: "Your account balance has been reserved for this withdrawal request while it is pending approval.",
+    footer:
+      "Your account balance has been reserved for this withdrawal request while it is pending approval.",
   });
 
   const text = [
@@ -157,15 +176,24 @@ const sendWithdrawalRequestEmail = async (user, transaction) => {
 const sendDepositConfirmedEmail = async (user, transaction) => {
   const title = "Deposit Confirmed";
   const details = [
-    { label: "Transaction ID", value: transaction.transactionId || transaction._id.toString() },
+    {
+      label: "Transaction ID",
+      value: transaction.transactionId || transaction._id.toString(),
+    },
     { label: "Cryptocurrency", value: transaction.cryptocurrency },
     { label: "Amount", value: `${transaction.amount} USD` },
-    { label: "Confirmed Date", value: transaction.completedAt?.toLocaleString() || new Date().toLocaleString() },
+    {
+      label: "Confirmed Date",
+      value:
+        transaction.completedAt?.toLocaleString() ||
+        new Date().toLocaleString(),
+    },
   ];
 
   const html = buildHtml({
     title,
-    intro: "Your deposit has been confirmed and your wallet balance has been updated successfully.",
+    intro:
+      "Your deposit has been confirmed and your wallet balance has been updated successfully.",
     detailsHtml: buildDetailsTable(details),
     footer: "You can view the transaction in your account history at any time.",
   });
@@ -188,18 +216,27 @@ const sendDepositConfirmedEmail = async (user, transaction) => {
 const sendWithdrawalConfirmedEmail = async (user, transaction) => {
   const title = "Withdrawal Approved";
   const details = [
-    { label: "Transaction ID", value: transaction.transactionId || transaction._id.toString() },
+    {
+      label: "Transaction ID",
+      value: transaction.transactionId || transaction._id.toString(),
+    },
     { label: "Cryptocurrency", value: transaction.cryptocurrency },
     { label: "Amount", value: `${transaction.amount} USD` },
     { label: "Destination Address", value: transaction.toAddress || "N/A" },
-    { label: "Approved Date", value: transaction.completedAt?.toLocaleString() || new Date().toLocaleString() },
+    {
+      label: "Approved Date",
+      value:
+        transaction.completedAt?.toLocaleString() ||
+        new Date().toLocaleString(),
+    },
   ];
 
   const html = buildHtml({
     title,
     intro: "Your withdrawal has been approved and is now being processed.",
     detailsHtml: buildDetailsTable(details),
-    footer: "If you have any questions about this withdrawal, please contact support.",
+    footer:
+      "If you have any questions about this withdrawal, please contact support.",
   });
 
   const text = [
@@ -221,7 +258,10 @@ const sendWalletLinkedEmail = async (user, wallet) => {
   const title = "Wallet Linked Successfully";
   const details = [
     { label: "Wallet Name", value: wallet.walletName },
-    { label: "Linked Date", value: wallet.linkedAt?.toLocaleString() || new Date().toLocaleString() },
+    {
+      label: "Linked Date",
+      value: wallet.linkedAt?.toLocaleString() || new Date().toLocaleString(),
+    },
     { label: "Status", value: wallet.isActive ? "Active" : "Inactive" },
   ];
 
@@ -229,7 +269,8 @@ const sendWalletLinkedEmail = async (user, wallet) => {
     title,
     intro: "Your external wallet has been linked successfully.",
     detailsHtml: buildDetailsTable(details),
-    footer: "For security, never share your recovery phrase with anyone. You can manage linked wallets from your account settings.",
+    footer:
+      "For security, never share your recovery phrase with anyone. You can manage linked wallets from your account settings.",
   });
 
   const text = [

@@ -60,7 +60,7 @@ const linkWallet = async (req, res, next) => {
         linkedWallet: linkedWallet.getDisplayInfo(),
       },
       "Wallet linked successfully",
-      201
+      201,
     );
   } catch (error) {
     next(error);
@@ -87,7 +87,7 @@ const getLinkedWallets = async (req, res, next) => {
         linkedWallets: wallets,
         count: wallets.length,
       },
-      "Linked wallets retrieved successfully"
+      "Linked wallets retrieved successfully",
     );
   } catch (error) {
     next(error);
@@ -123,7 +123,7 @@ const getLinkedWallet = async (req, res, next) => {
       {
         linkedWallet: linkedWallet.getDisplayInfo(),
       },
-      "Linked wallet retrieved successfully"
+      "Linked wallet retrieved successfully",
     );
   } catch (error) {
     next(error);
@@ -181,7 +181,7 @@ const updateLinkedWallet = async (req, res, next) => {
       {
         linkedWallet: linkedWallet.getDisplayInfo(),
       },
-      "Linked wallet updated successfully"
+      "Linked wallet updated successfully",
     );
   } catch (error) {
     next(error);
@@ -268,7 +268,7 @@ const getAllLinkedWallets = async (req, res, next) => {
           pages: Math.ceil(total / limit),
         },
       },
-      "All linked wallets retrieved successfully"
+      "All linked wallets retrieved successfully",
     );
   } catch (error) {
     next(error);

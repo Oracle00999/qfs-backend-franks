@@ -17,7 +17,7 @@ const confirmDeposit = async (req, res, next) => {
     // Find the transaction
     const transaction = await Transaction.findById(transactionId).populate(
       "user",
-      "firstName lastName email"
+      "firstName lastName email",
     );
 
     if (!transaction) {
@@ -77,7 +77,7 @@ const confirmDeposit = async (req, res, next) => {
         totalValue: wallet.totalValue,
         message: "Deposit confirmed successfully",
       },
-      "Deposit confirmed successfully"
+      "Deposit confirmed successfully",
     );
   } catch (error) {
     next(error);
@@ -95,7 +95,7 @@ const rejectDeposit = async (req, res, next) => {
 
     const transaction = await Transaction.findById(transactionId).populate(
       "user",
-      "firstName lastName email"
+      "firstName lastName email",
     );
 
     if (!transaction) {
@@ -133,7 +133,7 @@ const rejectDeposit = async (req, res, next) => {
         },
         message: "Deposit rejected successfully",
       },
-      "Deposit rejected successfully"
+      "Deposit rejected successfully",
     );
   } catch (error) {
     next(error);
@@ -151,7 +151,7 @@ const approveWithdrawal = async (req, res, next) => {
     // Find the transaction
     const transaction = await Transaction.findById(transactionId).populate(
       "user",
-      "firstName lastName email"
+      "firstName lastName email",
     );
 
     if (!transaction) {
@@ -224,7 +224,7 @@ const approveWithdrawal = async (req, res, next) => {
         message:
           "Withdrawal approved successfully. Funds sent to destination address.",
       },
-      "Withdrawal approved successfully"
+      "Withdrawal approved successfully",
     );
   } catch (error) {
     next(error);
@@ -241,7 +241,7 @@ const rejectWithdrawal = async (req, res, next) => {
 
     const transaction = await Transaction.findById(transactionId).populate(
       "user",
-      "firstName lastName email"
+      "firstName lastName email",
     );
 
     if (!transaction) {
@@ -278,7 +278,7 @@ const rejectWithdrawal = async (req, res, next) => {
     // ADD BACK THE DEDUCTED BALANCE
     const refundedBalance = wallet.updateBalance(
       transaction.cryptocurrency,
-      transaction.amount
+      transaction.amount,
     );
     await wallet.save();
 
@@ -301,7 +301,7 @@ const rejectWithdrawal = async (req, res, next) => {
         },
         message: "Withdrawal rejected. Balance refunded to user.",
       },
-      "Withdrawal rejected successfully"
+      "Withdrawal rejected successfully",
     );
   } catch (error) {
     next(error);
@@ -318,7 +318,7 @@ const cancelTransaction = async (req, res, next) => {
 
     const transaction = await Transaction.findById(transactionId).populate(
       "user",
-      "firstName lastName email"
+      "firstName lastName email",
     );
 
     if (!transaction) {
@@ -360,7 +360,7 @@ const cancelTransaction = async (req, res, next) => {
             ? "Transaction cancelled. Balance refunded to user."
             : "Transaction cancelled successfully.",
       },
-      "Transaction cancelled successfully"
+      "Transaction cancelled successfully",
     );
   } catch (error) {
     next(error);

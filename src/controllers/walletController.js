@@ -29,7 +29,7 @@ const getWalletBalances = async (req, res, next) => {
         balances: balances,
         lastActivity: wallet.lastActivity,
       },
-      "Wallet balances retrieved successfully"
+      "Wallet balances retrieved successfully",
     );
   } catch (error) {
     next(error);
@@ -62,7 +62,7 @@ const getCryptoBalance = async (req, res, next) => {
         balance: balance,
         walletId: wallet._id,
       },
-      "Balance retrieved successfully"
+      "Balance retrieved successfully",
     );
   } catch (error) {
     next(error);
@@ -106,7 +106,11 @@ const requestDeposit = async (req, res, next) => {
     });
 
     try {
-      await sendDepositRequestEmail(req.user, transaction, depositAddress.address);
+      await sendDepositRequestEmail(
+        req.user,
+        transaction,
+        depositAddress.address,
+      );
     } catch (error) {
       console.error("Failed to send deposit request email:", error);
     }
@@ -120,7 +124,7 @@ const requestDeposit = async (req, res, next) => {
           "Deposit request submitted. Send funds to the address above and await admin confirmation.",
       },
       "Deposit request submitted",
-      201
+      201,
     );
   } catch (error) {
     next(error);
@@ -189,7 +193,7 @@ const requestWithdrawal = async (req, res, next) => {
           "Withdrawal request submitted. Balance deducted. Awaiting admin approval.",
       },
       "Withdrawal request submitted",
-      201
+      201,
     );
   } catch (error) {
     next(error);
@@ -235,7 +239,7 @@ const getTransactionHistory = async (req, res, next) => {
           pages: Math.ceil(total / limit),
         },
       },
-      "Transaction history retrieved successfully"
+      "Transaction history retrieved successfully",
     );
   } catch (error) {
     next(error);
@@ -264,7 +268,7 @@ const getTransactionById = async (req, res, next) => {
       {
         transaction: transaction.getUserDetails(),
       },
-      "Transaction retrieved successfully"
+      "Transaction retrieved successfully",
     );
   } catch (error) {
     next(error);
