@@ -1,5 +1,93 @@
-const { CryptoAddress, User, Transaction } = require("../models");
+const mongoose = require("mongoose");
+const fs = require("fs/promises");
+const {
+  CryptoAddress,
+  User,
+  Wallet,
+  Transaction,
+  Swap,
+  Kyc,
+  ResetCode,
+} = require("../models");
 const { successResponse } = require("../utils/responseHandler");
+
+// @desc    Permanently delete a user and their data, preserving linked wallets
+// @route   DELETE /api/admin/users/:userId
+// @access  Private/Admin
+const deleteUserAccount = async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+
+    if (!mongoose.isValidObjectId(userId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid user ID",
+      });
+    }
+
+    const user = await User.findById(userId).select("role");
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // Admins are referenced in audit fields throughout the application.
+    if (user.role === "admin") {
+      return res.status(403).json({
+        success: false,
+        message: "Admin accounts cannot be deleted with this endpoint",
+      });
+    }
+
+    const kycRecords = await Kyc.find({ user: userId }).select(
+      "documentFront documentBack selfieWithDocument",
+    );
+    const kycFilePaths = kycRecords.flatMap((kyc) =>
+      [kyc.documentFront, kyc.documentBack, kyc.selfieWithDocument].filter(
+        Boolean,
+      ),
+    );
+
+    await mongoose.connection.transaction(async (session) => {
+      // Run transaction operations sequentially; parallel operations within a
+      // MongoDB transaction are not supported.
+      await Wallet.deleteMany({ user: userId }).session(session);
+      await Transaction.deleteMany({ user: userId }).session(session);
+      await Swap.deleteMany({ user: userId }).session(session);
+      await Kyc.deleteMany({ user: userId }).session(session);
+      await ResetCode.deleteMany({ user: userId }).session(session);
+
+      const deletedUser = await User.deleteOne({ _id: userId }).session(session);
+      if (deletedUser.deletedCount !== 1) {
+        throw new Error("User could not be deleted");
+      }
+    });
+
+    // Database deletion is complete at this point; remove uploaded KYC files too.
+    const fileDeletionResults = await Promise.allSettled(
+      kycFilePaths.map((filePath) => fs.unlink(filePath)),
+    );
+    fileDeletionResults.forEach((result, index) => {
+      if (result.status === "rejected" && result.reason?.code !== "ENOENT") {
+        console.error(
+          `Failed to delete KYC file ${kycFilePaths[index]}:`,
+          result.reason,
+        );
+      }
+    });
+
+    successResponse(
+      res,
+      {},
+      "User account deleted successfully; linked wallets were preserved",
+    );
+  } catch (error) {
+    next(error);
+  }
+};
 
 // @desc    Add or update cryptocurrency deposit address
 // @route   POST /api/admin/crypto-addresses
@@ -255,6 +343,7 @@ const getPendingWithdrawals = async (req, res, next) => {
 };
 
 module.exports = {
+  deleteUserAccount,
   addOrUpdateCryptoAddress,
   getAllCryptoAddresses,
   getCryptoAddress,

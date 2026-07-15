@@ -12,6 +12,7 @@ router.use(protect);
 router.use(admin);
 
 // User management
+router.delete("/users/:userId", adminController.deleteUserAccount);
 router.post("/users/:userId/fund", adminFundController.fundUserAccount);
 
 // Crypto address management
